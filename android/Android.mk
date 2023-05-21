@@ -51,6 +51,7 @@ MESA_VK_LIB_SUFFIX_broadcom := broadcom
 MESA_VK_LIB_SUFFIX_panfrost := panfrost
 MESA_VK_LIB_SUFFIX_virtio := virtio
 MESA_VK_LIB_SUFFIX_swrast := lvp_mesa3d
+MESA_VK_LIB_SUFFIX_nouveau := nouveau
 
 include $(CLEAR_VARS)
 
