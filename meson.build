@@ -1612,7 +1612,7 @@ if dep_thread.found()
 endif
 
 with_expat = get_option('expat') \
-  .disable_auto_if(with_platform_android or with_platform_windows) \
+  .disable_auto_if(with_platform_windows) \
   .enable_if(with_intel_tools, error_message : 'Intel tools require expat')
 
 if host_machine.system() == 'darwin'
@@ -1624,8 +1624,8 @@ endif
 
 # We don't require expat on Android or Windows
 use_xmlconfig = get_option('xmlconfig') \
-  .require(not (with_platform_android or with_platform_windows),
-           error_message : 'xmlconfig not available on Android or Windows') \
+  .require(not (with_platform_windows),
+           error_message : 'xmlconfig not available on Windows') \
   .require(dep_expat.found(),
            error_message : 'requires expat') \
   .allowed()

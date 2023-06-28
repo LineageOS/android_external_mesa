@@ -98,6 +98,7 @@ MESON_GEN_NINJA := \
 	-Dcpp_rtti=false                                                             \
 	-Dlmsensors=disabled                                                         \
 	-Dandroid-libbacktrace=disabled                                              \
+	-Dxmlconfig=enabled															 \
 	$(BOARD_MESA3D_MESON_ARGS)                                                   \
 
 MESON_BUILD := PATH=~/.cargo/bin:$(AOSP_ABSOLUTE_PATH)/prebuilts/mesa-build-dep/bin:/usr/bin:/bin:/sbin:$$PATH ninja -C $(MESON_OUT_DIR)/build
