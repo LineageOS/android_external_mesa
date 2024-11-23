@@ -284,7 +284,7 @@ dri2_get_dri_config(struct dri2_egl_config *conf, EGLint surface_type,
    const bool double_buffer = surface_type == EGL_WINDOW_BIT;
    const bool srgb = colorspace == EGL_GL_COLORSPACE_SRGB_KHR;
 
-   return conf->dri_config[double_buffer][srgb];
+   return conf->dri_config[double_buffer][srgb] ? conf->dri_config[double_buffer][srgb]: conf->dri_config[double_buffer][!srgb];
 }
 
 static EGLBoolean
