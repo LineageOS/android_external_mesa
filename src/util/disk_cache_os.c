@@ -910,10 +910,10 @@ disk_cache_generate_cache_dir(void *mem_ctx, const char *gpu_name,
          cache_dir_name = CACHE_DIR_NAME_DB;
    }
 
-   const char *path = os_get_option_secure("MESA_SHADER_CACHE_DIR");
+   const char *path = os_get_option("MESA_SHADER_CACHE_DIR");
 
    if (!path) {
-      path = os_get_option_secure("MESA_GLSL_CACHE_DIR");
+      path = os_get_option("MESA_GLSL_CACHE_DIR");
       if (path)
          fprintf(stderr,
                  "*** MESA_GLSL_CACHE_DIR is deprecated; "
@@ -927,7 +927,7 @@ disk_cache_generate_cache_dir(void *mem_ctx, const char *gpu_name,
    }
 
    if (path == NULL) {
-      char *xdg_cache_home = secure_getenv("XDG_CACHE_HOME");
+      char *xdg_cache_home = getenv("XDG_CACHE_HOME");
 
       if (xdg_cache_home) {
          path = concatenate_and_mkdir(mem_ctx, xdg_cache_home, cache_dir_name,
