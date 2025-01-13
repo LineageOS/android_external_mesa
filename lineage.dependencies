@@ -1,0 +1,6 @@
+[
+  {
+    "repository": "android_prebuilts_mesa-build-dep",
+    "target_path": "prebuilts/mesa-build-dep"
+  }
+]
