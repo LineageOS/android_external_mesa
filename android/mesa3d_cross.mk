@@ -83,7 +83,7 @@ MESA3D_GLES_BINS := \
     $($(M_TARGET_PREFIX)MESA3D_LIBGLESV2_BIN) \
 
 MESON_GEN_NINJA := \
-	cd $(MESON_OUT_DIR) && PATH=/usr/bin:/usr/local/bin:$$PATH meson ./build     \
+	cd $(MESON_OUT_DIR) && PATH=/usr/bin:/usr/local/bin:$(AOSP_ABSOLUTE_PATH)/prebuilts/mesa-build-dep/bin:$$PATH meson ./build \
 	--cross-file $(call relative-to-absolute,$(MESON_GEN_DIR))/aosp_cross        \
 	--buildtype=release                                                          \
 	-Dplatforms=android                                                          \
@@ -99,7 +99,7 @@ MESON_GEN_NINJA := \
 	-Dandroid-libbacktrace=disabled                                              \
 	$(BOARD_MESA3D_MESON_ARGS)                                                   \
 
-MESON_BUILD := PATH=/usr/bin:/bin:/sbin:$$PATH ninja -C $(MESON_OUT_DIR)/build
+MESON_BUILD := PATH=/usr/bin:/bin:/sbin:$(AOSP_ABSOLUTE_PATH)/prebuilts/mesa-build-dep/bin:$$PATH ninja -C $(MESON_OUT_DIR)/build
 
 $(MESON_GEN_FILES_TARGET): MESON_CPU_FAMILY := $(subst arm64,aarch64,$(TARGET_$(M_TARGET_PREFIX)ARCH))
 
