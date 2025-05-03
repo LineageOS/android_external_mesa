@@ -60,6 +60,11 @@ LOCAL_HEADER_LIBRARIES := libnativebase_headers hwvulkan_headers
 MESON_GEN_PKGCONFIGS := log cutils expat hardware libdrm:$(LIBDRM_VERSION) nativewindow sync zlib:1.2.11 libelf
 LOCAL_CFLAGS += $(BOARD_MESA3D_CFLAGS)
 
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -lt 35; echo $$?), 0)
+# Before SDK35 the c++ filesystem API was part of a standalone library
+LOCAL_STATIC_LIBRARIES += libc++fs
+endif
+
 ifneq ($(filter i915 r300,$(BOARD_MESA3D_GALLIUM_DRIVERS)),)
 MESON_GEN_LLVM_STUB := true
 endif
