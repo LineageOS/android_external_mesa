@@ -1,0 +1,30 @@
+//
+// SPDX-FileCopyrightText: The LineageOS Project
+// SPDX-License-Identifier: Apache-2.0
+//
+
+python_binary_host {
+    name: "mesa_src_util_format_u_format_table_py",
+    main: "u_format_table.py",
+    srcs: [
+        "u_format_pack.py",
+        "u_format_parse.py",
+        "u_format_table.py",
+    ],
+    libs: ["pyyaml"],
+}
+
+genrule {
+    name: "gen-mesa_src_util_format_u_format_gen_h",
+    out: ["util/format/u_format_gen.h"],
+    srcs: ["u_format.yaml"],
+    tools: ["mesa_src_util_format_u_format_table_py"],
+    cmd: "$(location mesa_src_util_format_u_format_table_py) $(in) --enums > $(out)",
+}
+
+cc_library_headers {
+    name: "mesa_src_util_format_u_format_gen_h",
+    generated_headers: ["gen-mesa_src_util_format_u_format_gen_h"],
+    export_generated_headers: ["gen-mesa_src_util_format_u_format_gen_h"],
+    vendor: true,
+}
