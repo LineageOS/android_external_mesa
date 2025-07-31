@@ -10,6 +10,7 @@
 using std::atomic_uint_fast32_t;
 #else
 #include <stdatomic.h>
+typedef _Atomic(uint_fast32_t) atomic_uint_fast32_t;
 #endif
 
 #include <sys/mman.h>
