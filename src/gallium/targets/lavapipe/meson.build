@@ -1,7 +1,7 @@
 
 
 libvulkan_lvp = shared_library(
-  'vulkan_lvp',
+  'vulkan_lvp_mesa3d',
   [ 'lavapipe_target.c' ],
   vs_module_defs : vulkan_api_def,
   include_directories : [ inc_src, inc_util, inc_include, inc_gallium, inc_gallium_aux, inc_gallium_winsys, inc_gallium_drivers ],

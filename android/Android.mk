@@ -50,7 +50,7 @@ MESA_VK_LIB_SUFFIX_freedreno := freedreno
 MESA_VK_LIB_SUFFIX_broadcom := broadcom
 MESA_VK_LIB_SUFFIX_panfrost := panfrost
 MESA_VK_LIB_SUFFIX_virtio := virtio
-MESA_VK_LIB_SUFFIX_swrast := lvp
+MESA_VK_LIB_SUFFIX_swrast := lvp_mesa3d
 
 include $(CLEAR_VARS)
 
