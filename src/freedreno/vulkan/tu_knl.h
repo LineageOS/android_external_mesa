@@ -65,6 +65,14 @@ struct tu_bo {
     * for the purposes of VK_EXT_device_address_binding_report
     */
    struct vk_object_base *base;
+
+   /* Stable identifier for the underlying memory object.
+    *
+    * Used for VK_EXT_device_memory_report. On KGSL, GEM handles are
+    * per-import and not stable, so this may be derived from the dma-buf
+    * inode to provide a consistent ID across imports.
+    */
+   uint64_t unique_id;
 };
 
 enum tu_sparse_vma_flags {

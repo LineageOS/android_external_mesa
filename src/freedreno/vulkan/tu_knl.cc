@@ -61,6 +61,9 @@ tu_bo_init_new_explicit_iova(struct tu_device *dev,
 
    (*out_bo)->dump = flags & TU_BO_ALLOC_ALLOW_DUMP;
 
+   if (!(*out_bo)->unique_id)
+      (*out_bo)->unique_id = (*out_bo)->gem_handle;
+
    return VK_SUCCESS;
 }
 
@@ -82,6 +85,9 @@ tu_bo_init_dmabuf(struct tu_device *dev,
     */
    if (dev->physical_device->has_cached_non_coherent_memory)
       (*bo)->cached_non_coherent = true;
+
+   if (!(*bo)->unique_id)
+      (*bo)->unique_id = (*bo)->gem_handle;
 
    return VK_SUCCESS;
 }

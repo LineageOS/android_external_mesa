@@ -369,6 +369,13 @@ kgsl_bo_init_dmabuf(struct tu_device *dev,
       .shared_fd = os_dupfd_cloexec(fd),
    };
 
+   struct stat st;
+   if (fstat(fd, &st) == 0)
+      /* Use the inode number as the unique ID, but set the MSB to avoid
+       * collisions with 32-bit KGSL handles (which are used for native BOs).
+       */
+      bo->unique_id = st.st_ino | (1ULL << 63);
+
    tu_dump_bo_init(dev, bo);
 
    *out_bo = bo;
