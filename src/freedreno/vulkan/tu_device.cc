@@ -23,6 +23,7 @@
 #include "util/os_misc.h"
 #include "util/u_process.h"
 #include "vk_android.h"
+#include "vk_debug_utils.h"
 #include "vk_shader_module.h"
 #include "vk_sampler.h"
 #include "vk_util.h"
@@ -274,6 +275,7 @@ get_device_extensions(const struct tu_physical_device *device,
       .EXT_descriptor_buffer = true,
       .EXT_descriptor_indexing = true,
       .EXT_device_address_binding_report = true,
+      .EXT_device_memory_report = true,
 #ifdef VK_USE_PLATFORM_DISPLAY_KHR
       .EXT_display_control = true,
 #endif
@@ -629,6 +631,9 @@ tu_get_features(struct tu_physical_device *pdevice,
 
    /* VK_EXT_device_address_binding_report */
    features->reportAddressBinding = true;
+
+   /* VK_EXT_device_memory_report */
+   features->deviceMemoryReport = true;
 
    /* VK_EXT_extended_dynamic_state */
    features->extendedDynamicState = true;
@@ -3284,6 +3289,40 @@ tu_add_to_heap(struct tu_device *dev, struct tu_bo *bo)
    return VK_SUCCESS;
 }
 
+static void
+tu_memory_emit_report(struct tu_device *device,
+                      const struct tu_device_memory *mem,
+                      const VkMemoryAllocateInfo *alloc_info,
+                      VkResult result)
+{
+   if (likely(!device->vk.memory_reports))
+      return;
+
+   if (result != VK_SUCCESS) {
+      vk_emit_device_memory_report(
+         &device->vk, VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_ALLOCATION_FAILED_EXT,
+         /* mem_obj_id */ 0, alloc_info->allocationSize,
+         VK_OBJECT_TYPE_DEVICE_MEMORY,
+         /* obj_handle */ 0, alloc_info->memoryTypeIndex);
+      return;
+   }
+
+   VkDeviceMemoryReportEventTypeEXT type;
+   if (alloc_info) {
+      type = mem->vk.import_handle_type
+                ? VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_IMPORT_EXT
+                : VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_ALLOCATE_EXT;
+   } else {
+      type = mem->vk.import_handle_type
+                ? VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_UNIMPORT_EXT
+                : VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_FREE_EXT;
+   }
+
+   vk_emit_device_memory_report(&device->vk, type, mem->bo->unique_id,
+                                mem->bo->size, VK_OBJECT_TYPE_DEVICE_MEMORY,
+                                (uintptr_t)(mem), mem->vk.memory_type_index);
+}
+
 VKAPI_ATTR VkResult VKAPI_CALL
 tu_AllocateMemory(VkDevice _device,
                   const VkMemoryAllocateInfo *pAllocateInfo,
@@ -3408,6 +3447,7 @@ tu_AllocateMemory(VkDevice _device,
 
    if (result != VK_SUCCESS) {
       vk_device_memory_destroy(&device->vk, pAllocator, &mem->vk);
+      tu_memory_emit_report(device, /* mem */ NULL, pAllocateInfo, result);
       return result;
    }
 
@@ -3420,6 +3460,8 @@ tu_AllocateMemory(VkDevice _device,
    }
 
    TU_RMV(heap_create, device, pAllocateInfo, mem);
+
+   tu_memory_emit_report(device, mem, pAllocateInfo, VK_SUCCESS);
 
    *pMem = tu_device_memory_to_handle(mem);
 
@@ -3485,6 +3527,8 @@ tu_FreeMemory(VkDevice _device,
       return;
 
    TU_RMV(resource_destroy, device, mem);
+
+   tu_memory_emit_report(device, mem, /* alloc_info */ NULL, VK_SUCCESS);
 
    if (mem->bo) {
       p_atomic_add(&device->physical_device->heap.used, -mem->bo->size);
