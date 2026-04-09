@@ -1,7 +1,5 @@
 [wrap-file]
 directory = libxml2-2.11.6
-source_url = https://download.gnome.org/sources/libxml2/2.11/libxml2-2.11.6.tar.xz
-source_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/libxml2_2.11.6-1/libxml2-2.11.6.tar.xz
 source_filename = libxml2-2.11.6.tar.xz
 source_hash = c90eee7506764abbe07bb616b82da452529609815aefef423d66ef080eb0c300
 patch_filename = libxml2_2.11.6-1_patch.zip
@@ -11,3 +9,4 @@ wrapdb_version = 2.11.6-1
 
 [provide]
 libxml-2.0 = libxml2_dep
+
