@@ -52,6 +52,8 @@ MESA_VK_LIB_SUFFIX_panfrost := panfrost
 MESA_VK_LIB_SUFFIX_virtio := virtio
 MESA_VK_LIB_SUFFIX_swrast := lvp_mesa3d
 MESA_VK_LIB_SUFFIX_nouveau := nouveau
+MESA_VK_LIB_SUFFIX_asahi := asahi
+MESA_VK_LIB_SUFFIX_powervr_mesa := imagination
 
 include $(CLEAR_VARS)
 
