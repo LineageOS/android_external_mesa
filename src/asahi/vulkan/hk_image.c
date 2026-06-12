@@ -15,6 +15,7 @@
 #include "vulkan/vulkan_core.h"
 
 #include "agx_bo.h"
+#include "hk_android.h"
 #include "hk_buffer.h"
 #include "hk_device.h"
 #include "hk_device_memory.h"
@@ -794,7 +795,7 @@ choose_drm_format_mod(struct hk_device *dev, uint8_t plane_count,
       return DRM_FORMAT_MOD_INVALID;
 }
 
-static VkResult
+VkResult
 hk_image_init(struct hk_device *dev, struct hk_image *image,
               const VkImageCreateInfo *pCreateInfo)
 {
@@ -951,6 +952,20 @@ hk_image_plane_alloc_vma(struct hk_device *dev, struct hk_image_plane *plane,
    return VK_SUCCESS;
 }
 
+VkResult
+hk_image_alloc_vmas(struct hk_device *dev, struct hk_image *image)
+{
+   for (uint8_t plane = 0; plane < image->plane_count; plane++) {
+      VkResult result =
+         hk_image_plane_alloc_vma(dev, &image->planes[plane],
+                                  image->vk.create_flags);
+      if (result != VK_SUCCESS)
+         return result;
+   }
+
+   return VK_SUCCESS;
+}
+
 static void
 hk_image_plane_finish(struct hk_device *dev, struct hk_image_plane *plane,
                       VkImageCreateFlags create_flags,
@@ -963,13 +978,19 @@ hk_image_plane_finish(struct hk_device *dev, struct hk_image_plane *plane,
    agx_bo_unreference(&dev->dev, plane->sparse_map);
 }
 
-static void
+void
 hk_image_finish(struct hk_device *dev, struct hk_image *image,
                 const VkAllocationCallbacks *pAllocator)
 {
    for (uint8_t plane = 0; plane < image->plane_count; plane++) {
       hk_image_plane_finish(dev, &image->planes[plane], image->vk.create_flags,
                             pAllocator);
+   }
+
+   if (image->vk.anb_memory) {
+      dev->vk.dispatch_table.FreeMemory(hk_device_to_handle(dev),
+                                        image->vk.anb_memory, pAllocator);
+      image->vk.anb_memory = VK_NULL_HANDLE;
    }
 
    vk_image_finish(&image->vk);
@@ -983,6 +1004,10 @@ hk_CreateImage(VkDevice _device, const VkImageCreateInfo *pCreateInfo,
    struct hk_physical_device *pdev = hk_device_physical(dev);
    struct hk_image *image;
    VkResult result;
+
+   if (hk_android_is_gralloc_image(pCreateInfo))
+      return hk_android_create_gralloc_image(_device, pCreateInfo, pAllocator,
+                                             pImage);
 
 #ifdef HK_USE_WSI_PLATFORM
    /* Ignore swapchain creation info on Android. Since we don't have an
@@ -1008,14 +1033,11 @@ hk_CreateImage(VkDevice _device, const VkImageCreateInfo *pCreateInfo,
       return result;
    }
 
-   for (uint8_t plane = 0; plane < image->plane_count; plane++) {
-      result = hk_image_plane_alloc_vma(dev, &image->planes[plane],
-                                        image->vk.create_flags);
-      if (result != VK_SUCCESS) {
-         hk_image_finish(dev, image, pAllocator);
-         vk_free2(&dev->vk.alloc, pAllocator, image);
-         return result;
-      }
+   result = hk_image_alloc_vmas(dev, image);
+   if (result != VK_SUCCESS) {
+      hk_image_finish(dev, image, pAllocator);
+      vk_free2(&dev->vk.alloc, pAllocator, image);
+      return result;
    }
 
    *pImage = hk_image_to_handle(image);
@@ -1355,6 +1377,21 @@ hk_BindImageMemory2(VkDevice device, uint32_t bindInfoCount,
    for (uint32_t i = 0; i < bindInfoCount; ++i) {
       VK_FROM_HANDLE(hk_device_memory, mem, pBindInfos[i].memory);
       VK_FROM_HANDLE(hk_image, image, pBindInfos[i].image);
+
+      if (!mem) {
+         VkDeviceMemory mem_handle = VK_NULL_HANDLE;
+         VkResult result =
+            hk_android_get_wsi_memory(dev, &pBindInfos[i], &mem_handle);
+         if (result == VK_SUCCESS) {
+            mem = hk_device_memory_from_handle(mem_handle);
+         } else if (result != VK_ERROR_FEATURE_NOT_PRESENT) {
+            const VkBindMemoryStatusKHR *status = vk_find_struct_const(
+               pBindInfos[i].pNext, BIND_MEMORY_STATUS_KHR);
+            if (status != NULL && status->pResult != NULL)
+               *status->pResult = result;
+            return result;
+         }
+      }
 
       /* Ignore this struct on Android, we cannot access swapchain structures
        * there. */

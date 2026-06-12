@@ -39,6 +39,7 @@
 #define HK_MIP_TAIL_START_OFFSET 0x6d74000000000000UL
 
 struct hk_device_memory;
+struct hk_device;
 struct hk_physical_device;
 
 static VkFormatFeatureFlags2
@@ -78,6 +79,12 @@ struct hk_image {
 };
 
 VK_DEFINE_NONDISP_HANDLE_CASTS(hk_image, vk.base, VkImage, VK_OBJECT_TYPE_IMAGE)
+
+VkResult hk_image_init(struct hk_device *dev, struct hk_image *image,
+                       const VkImageCreateInfo *pCreateInfo);
+VkResult hk_image_alloc_vmas(struct hk_device *dev, struct hk_image *image);
+void hk_image_finish(struct hk_device *dev, struct hk_image *image,
+                     const VkAllocationCallbacks *pAllocator);
 
 static inline uint64_t
 hk_image_plane_base_address(const struct hk_image_plane *plane)

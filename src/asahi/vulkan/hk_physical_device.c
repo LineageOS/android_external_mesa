@@ -23,6 +23,7 @@
 #include "util/simple_mtx.h"
 #include "vulkan/vulkan_core.h"
 #include "vulkan/wsi/wsi_common.h"
+#include "vk_android.h"
 #include "vk_drm_syncobj.h"
 #include "vk_shader_module.h"
 
@@ -48,6 +49,9 @@ hk_get_device_extensions(const struct hk_instance *instance,
                          struct vk_device_extension_table *ext)
 {
    *ext = (struct vk_device_extension_table){
+#if DETECT_OS_ANDROID
+      .ANDROID_native_buffer = vk_android_get_ugralloc() != NULL,
+#endif
       .KHR_8bit_storage = true,
       .KHR_16bit_storage = true,
       .KHR_bind_memory2 = true,
