@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0c28cd46_5cf98990",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 14048
+      },
+      "writtenOn": "2026-06-30T23:58:43Z",
+      "side": 1,
+      "message": "This works around the broken rendering in eden when combined with minigbm.",
+      "revId": "592114e9e6ba5520db69232a8f7e685ab6b70fd8",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
