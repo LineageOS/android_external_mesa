@@ -158,6 +158,7 @@ $(MESON_GEN_FILES_TARGET): PRIVATE_TARGET_CRTEND_SO_O := $(my_target_crtend_so_o
 define m-lld-flags
   -Wl,-e,main \
   -nostdlib -Wl,--gc-sections \
+  -Wl,-rpath,\$$ORIGIN \
   $(PRIVATE_TARGET_CRTBEGIN_SO_O) \
   $(PRIVATE_ALL_OBJECTS) \
   -Wl,--whole-archive \
